@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCMDB Watcher</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <nav class="sidebar">
+      <div class="logo">
+        <span class="logo-icon">◆</span>
+        <span class="logo-text">SCMDB</span>
+      </div>
+      <ul class="nav-items">
+        <li class="nav-item active" data-tab="dashboard">
+          <span class="nav-icon">⊞</span>
+          <span>Dashboard</span>
+        </li>
+        <li class="nav-item" data-tab="logs">
+          <span class="nav-icon">≡</span>
+          <span>Logs</span>
+        </li>
+        <li class="nav-item" data-tab="import">
+          <span class="nav-icon">↓</span>
+          <span>Import</span>
+        </li>
+        <li class="nav-item" data-tab="settings">
+          <span class="nav-icon">⚙</span>
+          <span>Settings</span>
+        </li>
+      </ul>
+      <div class="nav-footer">
+        <div class="status-badge" id="statusBadge">
+          <span class="status-dot"></span>
+          <span class="status-text">Stopped</span>
+        </div>
+      </div>
+    </nav>
+
+    <main class="content">
+      <!-- Dashboard -->
+      <section class="tab-panel active" id="tab-dashboard">
+        <header class="panel-header">
+          <h1>Dashboard</h1>
+          <div class="header-actions">
+            <button class="btn btn-primary" id="btnToggleWatcher">Start Watcher</button>
+          </div>
+        </header>
+        <div class="panel-body">
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-value" id="statPort">23456</div>
+              <div class="stat-label">Port</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="statMissions">0</div>
+              <div class="stat-label">Active Missions</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="statEvents">0</div>
+              <div class="stat-label">Events</div>
+            </div>
+          </div>
+          <div class="section">
+            <h2>Active Missions</h2>
+            <div class="missions-list" id="missionsList">
+              <div class="empty-state">No active missions</div>
+            </div>
+          </div>
+          <div class="section">
+            <h2>Recent Events</h2>
+            <div class="events-list" id="recentEvents">
+              <div class="empty-state">Waiting for events...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Logs -->
+      <section class="tab-panel" id="tab-logs">
+        <header class="panel-header">
+          <h1>Event Log</h1>
+          <div class="header-actions">
+            <button class="btn btn-ghost" id="btnClearLogs">Clear</button>
+            <label class="toggle-label">
+              <input type="checkbox" id="chkAutoScroll" checked>
+              Auto-scroll
+            </label>
+          </div>
+        </header>
+        <div class="panel-body">
+          <div class="log-viewer" id="logViewer"></div>
+        </div>
+      </section>
+
+      <!-- Import -->
+      <section class="tab-panel" id="tab-import">
+        <header class="panel-header">
+          <h1>Import Logbackups</h1>
+        </header>
+        <div class="panel-body">
+          <p class="description">Scan Star Citizen logbackups directory and export completed missions + blueprints as JSON for import into SCMDB.</p>
+          <div class="form-group">
+            <label>Logbackups Directory</label>
+            <div class="input-row">
+              <input type="text" id="inputLogbackups" class="input" placeholder="Path to logbackups folder..." readonly>
+              <button class="btn btn-ghost" id="btnBrowseLogbackups">Browse</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="toggle-label">
+              <input type="checkbox" id="chkIncludeCurrent">
+              Include current Game.log
+            </label>
+          </div>
+          <button class="btn btn-primary" id="btnRunImport">Run Import</button>
+          <div class="import-result hidden" id="importResult">
+            <h3>Results</h3>
+            <div id="importResultContent"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section class="tab-panel" id="tab-settings">
+        <header class="panel-header">
+          <h1>Settings</h1>
+        </header>
+        <div class="panel-body">
+          <div class="form-group">
+            <label>Game.log Path</label>
+            <div class="input-row">
+              <input type="text" id="inputLogPath" class="input" placeholder="Path to Game.log...">
+              <button class="btn btn-ghost" id="btnBrowseLogPath">Browse</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>SSE Server Port</label>
+            <input type="number" id="inputPort" class="input input-sm" value="23456" min="1024" max="65535">
+          </div>
+          <div class="form-group">
+            <label class="toggle-label">
+              <input type="checkbox" id="chkAutoStart">
+              Auto-start watcher on launch
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="toggle-label">
+              <input type="checkbox" id="chkDevMode">
+              Developer mode (allow localhost CORS origins)
+            </label>
+          </div>
+          <div class="form-group hidden" id="devOriginsGroup">
+            <label>Extra Dev Origins (comma-separated)</label>
+            <input type="text" id="inputDevOrigins" class="input" placeholder="http://localhost:8080, ...">
+          </div>
+          <button class="btn btn-primary" id="btnSaveSettings">Save Settings</button>
+          <span class="save-feedback hidden" id="saveFeedback">Saved!</span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
