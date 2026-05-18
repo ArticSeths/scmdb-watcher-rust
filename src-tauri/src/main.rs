@@ -4,7 +4,7 @@ use std::sync::Arc;
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Emitter, Listener, Manager, WindowEvent,
+    Listener, Manager, WindowEvent,
 };
 use tokio::sync::Mutex;
 use tracing::info;
