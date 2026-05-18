@@ -82,14 +82,17 @@ impl LogTailer {
                             }
                         }
 
-                        // Read new lines
-                        let mut line = String::new();
+                        // Read raw bytes until newline to handle non-UTF-8 data
+                        // (e.g. Windows-1252 device names in Spanish locales).
+                        // Mirrors Python's `decode("utf-8", errors="replace")`.
+                        let mut buf: Vec<u8> = Vec::new();
                         loop {
-                            line.clear();
-                            match reader.read_line(&mut line).await {
+                            buf.clear();
+                            match reader.read_until(b'\n', &mut buf).await {
                                 Ok(0) => break,
                                 Ok(n) => {
                                     file_pos += n as u64;
+                                    let line = String::from_utf8_lossy(&buf);
                                     let trimmed = line.trim_end();
                                     if !trimmed.is_empty() {
                                         process_line(trimmed, &self.state, &self.bus).await;
