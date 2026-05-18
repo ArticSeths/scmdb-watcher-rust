@@ -53,9 +53,10 @@ The original watcher was a ~450-line Python script using Flask. It worked well b
 
 | Module | Purpose |
 |--------|---------|
+| `watcher/patterns.rs` | 4 shared compiled regex patterns (mission markers, accept, end, blueprint) |
 | `watcher/state.rs` | Mission state machine (guid map, active missions, lifecycle correlation) |
-| `watcher/parser.rs` | 5 compiled regex patterns + `process_line()` event extraction |
-| `watcher/tailer.rs` | Async file polling (200ms), rotation detection, replay on open |
+| `watcher/parser.rs` | Timestamp regex + `process_line()` event extraction (uses patterns) |
+| `watcher/tailer.rs` | Async file polling (200ms), rotation detection, seek-based resume |
 | `watcher/bus.rs` | `tokio::sync::broadcast` channel for fan-out to UI + SSE clients |
 | `server/sse_server.rs` | Axum HTTP server: `/ping`, `/state`, `/events` (SSE stream) |
 | `importer/mod.rs` | Batch scan of logbackups, dedup by GUID, JSON export |
@@ -117,7 +118,8 @@ Default config:
   "port": 23456,
   "dev_mode": false,
   "dev_origins": [],
-  "auto_start_watcher": true
+  "auto_start_watcher": true,
+  "custom_origins": []
 }
 ```
 
