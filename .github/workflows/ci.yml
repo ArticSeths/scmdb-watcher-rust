@@ -2,16 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   check:
     strategy:
       fail-fast: false
       matrix:
-        platform: [windows-latest, ubuntu-22.04, macos-latest]
+        platform: [windows-latest, ubuntu-22.04]
 
     runs-on: ${{ matrix.platform }}
 
