@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, State};
 use tokio::sync::{watch, Mutex};
-use tracing::{info, error};
+use tracing::{error, info};
 
 use crate::config::AppConfig;
 use crate::importer;
@@ -139,16 +139,12 @@ pub async fn run_import_command(
     let backups_dir = PathBuf::from(&logbackups_dir);
 
     let result = tokio::task::spawn_blocking(move || {
-        importer::run_import(
-            &backups_dir,
-            include_current,
-            Some(&log_path),
-        )
+        importer::run_import(&backups_dir, include_current, Some(&log_path))
     })
     .await
     .map_err(|e| e.to_string())??;
 
-    Ok(serde_json::to_value(result).map_err(|e| e.to_string())?)
+    serde_json::to_value(result).map_err(|e| e.to_string())
 }
 
 #[tauri::command]

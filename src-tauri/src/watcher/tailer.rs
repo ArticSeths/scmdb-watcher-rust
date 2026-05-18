@@ -1,6 +1,6 @@
 use std::path::PathBuf;
-use tokio::io::{AsyncBufReadExt, AsyncReadExt, BufReader};
 use tokio::fs::File;
+use tokio::io::{AsyncBufReadExt, AsyncSeekExt, BufReader};
 use tokio::sync::watch;
 use tracing::{info, warn};
 
@@ -24,7 +24,12 @@ impl LogTailer {
         bus: EventBus,
         stop_rx: watch::Receiver<bool>,
     ) -> Self {
-        Self { path, state, bus, stop_rx }
+        Self {
+            path,
+            state,
+            bus,
+            stop_rx,
+        }
     }
 
     pub async fn run(self) {
@@ -69,17 +74,11 @@ impl LogTailer {
 
                         let mut reader = BufReader::new(f);
 
-                        // Skip to last known position
+                        // Seek to last known position
                         if file_pos > 0 {
-                            let mut remaining = file_pos;
-                            let mut buf = vec![0u8; 8192];
-                            while remaining > 0 {
-                                let to_read = std::cmp::min(8192, remaining as usize);
-                                let n = reader.read(&mut buf[..to_read]).await.unwrap_or(0);
-                                if n == 0 {
-                                    break;
-                                }
-                                remaining -= n as u64;
+                            if let Err(e) = reader.seek(std::io::SeekFrom::Start(file_pos)).await {
+                                warn!("Seek error: {}", e);
+                                continue;
                             }
                         }
 

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use std::collections::VecDeque;
 use std::collections::HashMap;
+use std::collections::VecDeque;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -13,6 +13,7 @@ pub struct MissionEntry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ActiveMission {
     pub guid: String,
     pub debug_name: String,
@@ -34,6 +35,12 @@ pub struct WatcherStateInner {
     pub recent_lifecycle: VecDeque<MissionLifecycleEvent>,
 }
 
+impl Default for WatcherStateInner {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl WatcherStateInner {
     pub fn new() -> Self {
         Self {
@@ -50,10 +57,12 @@ impl WatcherStateInner {
     }
 
     pub fn record_marker(&mut self, guid: &str, generator: &str, contract: &str) {
-        self.guid_map.entry(guid.to_string()).or_insert_with(|| MissionEntry {
-            debug_name: contract.to_string(),
-            generator: generator.to_string(),
-        });
+        self.guid_map
+            .entry(guid.to_string())
+            .or_insert_with(|| MissionEntry {
+                debug_name: contract.to_string(),
+                generator: generator.to_string(),
+            });
     }
 
     pub fn record_accepted(&mut self, guid: &str, ts: f64) -> Option<ActiveMission> {
@@ -120,6 +129,12 @@ impl WatcherStateInner {
 #[derive(Clone)]
 pub struct WatcherState {
     pub inner: Arc<Mutex<WatcherStateInner>>,
+}
+
+impl Default for WatcherState {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl WatcherState {

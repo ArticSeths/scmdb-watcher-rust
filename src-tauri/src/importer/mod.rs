@@ -1,27 +1,13 @@
-use std::path::{Path, PathBuf};
 use serde::Serialize;
+use std::path::{Path, PathBuf};
 use tracing::{info, warn};
 
 use crate::watcher::parser::parse_log_timestamp;
+use crate::watcher::patterns::{RE_ACCEPTED, RE_BLUEPRINT, RE_END_MISSION, RE_MARKER};
 use crate::watcher::state::WatcherStateInner;
 
-use once_cell::sync::Lazy;
-use regex::Regex;
-
-static RE_MARKER: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"CreateMarker.*missionId \[([^\]]+)\].*generator name \[([^\]]+)\].*contract \[([^\]]+)\]").unwrap()
-});
-static RE_ACCEPTED: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r#"Added notification "Contract Accepted:.*?MissionId: \[([^\]]+)\]"#).unwrap()
-});
-static RE_END_MISSION: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"<EndMission>.*MissionId\[([^\]]+)\].*CompletionType\[(\w+)\].*Reason\[([^\]]+)\]").unwrap()
-});
-static RE_BLUEPRINT: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r#"Added notification "Received Blueprint: ([^:]+):"#).unwrap()
-});
-
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ExportedMission {
     pub guid: String,
     pub debug_name: String,
@@ -33,6 +19,7 @@ pub struct ExportedMission {
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ExportedBlueprint {
     pub product_name: String,
     pub ts: f64,
@@ -42,6 +29,7 @@ pub struct ExportedBlueprint {
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ImportResult {
     pub missions: Vec<ExportedMission>,
     pub blueprints: Vec<ExportedBlueprint>,
@@ -146,10 +134,17 @@ pub fn run_import(
     }
 
     if files.is_empty() {
-        return Err(format!("No log files found in {}", logbackups_dir.display()));
+        return Err(format!(
+            "No log files found in {}",
+            logbackups_dir.display()
+        ));
     }
 
-    info!("Scanning {} log file(s) from: {}", files.len(), logbackups_dir.display());
+    info!(
+        "Scanning {} log file(s) from: {}",
+        files.len(),
+        logbackups_dir.display()
+    );
 
     let mut all_missions = Vec::new();
     let mut all_blueprints = Vec::new();

@@ -10,9 +10,7 @@ use tokio::sync::Mutex;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
-use scmdb_watcher::commands::{
-    self, AppState,
-};
+use scmdb_watcher::commands::{self, AppState};
 use scmdb_watcher::config::AppConfig;
 use scmdb_watcher::watcher::bus::EventBus;
 use scmdb_watcher::watcher::state::WatcherState;
@@ -110,20 +108,18 @@ fn main() {
                     _ => {}
                 })
                 .on_tray_icon_event(|tray, event| {
-                    match event {
-                        TrayIconEvent::Click {
-                            button: MouseButton::Left,
-                            button_state: MouseButtonState::Up,
-                            ..
-                        } => {
-                            let app = tray.app_handle();
-                            if let Some(w) = app.get_webview_window("main") {
-                                let _ = w.show();
-                                let _ = w.unminimize();
-                                let _ = w.set_focus();
-                            }
+                    if let TrayIconEvent::Click {
+                        button: MouseButton::Left,
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } = event
+                    {
+                        let app = tray.app_handle();
+                        if let Some(w) = app.get_webview_window("main") {
+                            let _ = w.show();
+                            let _ = w.unminimize();
+                            let _ = w.set_focus();
                         }
-                        _ => {}
                     }
                 })
                 .build(app)?;

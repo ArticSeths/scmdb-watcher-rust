@@ -2,27 +2,10 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 
 use super::bus::{EventBus, WatcherEvent};
+use super::patterns::{RE_ACCEPTED, RE_BLUEPRINT, RE_END_MISSION, RE_MARKER};
 use super::state::WatcherState;
 
-static RE_TIMESTAMP: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"^<([0-9T:\-.Z]+)>").unwrap());
-
-static RE_MARKER: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"CreateMarker.*missionId \[([^\]]+)\].*generator name \[([^\]]+)\].*contract \[([^\]]+)\]").unwrap()
-});
-
-static RE_ACCEPTED: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r#"Added notification "Contract Accepted:.*?MissionId: \[([^\]]+)\]"#).unwrap()
-});
-
-static RE_END_MISSION: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"<EndMission>.*MissionId\[([^\]]+)\].*CompletionType\[(\w+)\].*Reason\[([^\]]+)\]")
-        .unwrap()
-});
-
-static RE_BLUEPRINT: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r#"Added notification "Received Blueprint: ([^:]+):"#).unwrap()
-});
+static RE_TIMESTAMP: Lazy<Regex> = Lazy::new(|| Regex::new(r"^<([0-9T:\-.Z]+)>").unwrap());
 
 pub fn parse_log_timestamp(line: &str) -> Option<f64> {
     let caps = RE_TIMESTAMP.captures(line)?;
@@ -32,8 +15,7 @@ pub fn parse_log_timestamp(line: &str) -> Option<f64> {
 }
 
 pub async fn process_line(line: &str, state: &WatcherState, bus: &EventBus) {
-    let ts = parse_log_timestamp(line)
-        .unwrap_or_else(|| chrono::Utc::now().timestamp() as f64);
+    let ts = parse_log_timestamp(line).unwrap_or_else(|| chrono::Utc::now().timestamp() as f64);
 
     if let Some(caps) = RE_MARKER.captures(line) {
         let guid = caps.get(1).unwrap().as_str();

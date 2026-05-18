@@ -93,8 +93,8 @@ function renderMissions() {
     .map(
       (m) => `
     <div class="mission-card">
-      <span class="mission-name">${escapeHtml(m.debug_name || m.debugName || '?')}</span>
-      <span class="mission-timer" data-start="${m.start_ts || m.startTs}">${formatElapsed(m.start_ts || m.startTs)}</span>
+      <span class="mission-name">${escapeHtml(m.debugName || '?')}</span>
+      <span class="mission-timer" data-start="${m.startTs}">${formatElapsed(m.startTs)}</span>
     </div>`
     )
     .join('');
@@ -136,25 +136,25 @@ function addEvent(event) {
 
   switch (type) {
     case 'mission_start':
-      text = `Mission started: ${event.debug_name || event.debugName || '?'}`;
+      text = `Mission started: ${event.debugName || '?'}`;
       typeClass = 'start';
       activeMissions.push(event);
       renderMissions();
       break;
     case 'mission_complete':
-      text = `Mission complete: ${event.debug_name || event.debugName || '?'}`;
+      text = `Mission complete: ${event.debugName || '?'}`;
       typeClass = 'complete';
       activeMissions = activeMissions.filter((m) => (m.guid) !== event.guid);
       renderMissions();
       break;
     case 'mission_ended':
-      text = `Mission ${event.completion}: ${event.debug_name || event.debugName || '?'}`;
+      text = `Mission ${event.completion}: ${event.debugName || '?'}`;
       typeClass = 'ended';
       activeMissions = activeMissions.filter((m) => (m.guid) !== event.guid);
       renderMissions();
       break;
     case 'blueprint_received':
-      text = `Blueprint: ${event.product_name || event.productName}`;
+      text = `Blueprint: ${event.productName}`;
       typeClass = 'blueprint';
       break;
     case 'session_reset':
@@ -354,8 +354,8 @@ btnRunImport.addEventListener('click', async () => {
     importResult.classList.remove('hidden');
     importResultContent.innerHTML = `
       <p><strong>${result.missions.length}</strong> mission(s), <strong>${result.blueprints.length}</strong> blueprint(s)</p>
-      <p>${result.source_logs.length} log file(s) scanned</p>
-      ${result.duplicates_merged > 0 ? `<p>${result.duplicates_merged} duplicate(s) merged</p>` : ''}
+      <p>${result.sourceLogs.length} log file(s) scanned</p>
+      ${result.duplicatesMerged > 0 ? `<p>${result.duplicatesMerged} duplicate(s) merged</p>` : ''}
       <button class="btn btn-primary" id="btnExportJson" style="margin-top:12px">Export JSON</button>
     `;
 
@@ -369,7 +369,7 @@ btnRunImport.addEventListener('click', async () => {
           exportSchemaVersion: 1,
           watcherVersion: '0.2.0',
           exportedAt: new Date().toISOString(),
-          sourceLogs: result.source_logs,
+          sourceLogs: result.sourceLogs,
           missions: result.missions,
           blueprints: result.blueprints,
         };

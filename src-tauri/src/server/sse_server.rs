@@ -23,7 +23,7 @@ use crate::watcher::state::WatcherState;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Clone)]
-struct AppState {
+struct SseState {
     watcher_state: WatcherState,
     event_bus: EventBus,
 }
@@ -43,7 +43,7 @@ pub async fn start_sse_server(
         .allow_origin(AllowOrigin::list(origins))
         .allow_methods([Method::GET]);
 
-    let state = AppState {
+    let state = SseState {
         watcher_state,
         event_bus,
     };
@@ -74,14 +74,14 @@ async fn ping_handler() -> impl IntoResponse {
     }))
 }
 
-async fn state_handler(State(state): State<AppState>) -> impl IntoResponse {
+async fn state_handler(State(state): State<SseState>) -> impl IntoResponse {
     let s = state.watcher_state.inner.lock().await;
     let active = s.snapshot_active();
     Json(json!({ "active": active }))
 }
 
 async fn sse_handler(
-    State(state): State<AppState>,
+    State(state): State<SseState>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
     let rx = state.event_bus.subscribe();
 
