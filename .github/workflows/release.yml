@@ -48,17 +48,32 @@ jobs:
         run: npm ci
 
       - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
+        run: npx tauri build --target ${{ matrix.target }}
+
+      - name: Package portable (Windows)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          $bin = "src-tauri/target/${{ matrix.target }}/release/scmdb-watcher.exe"
+          Copy-Item $bin "scmdb-watcher-${{ github.ref_name }}-windows-x64.exe"
+          Compress-Archive -Path $bin -DestinationPath "scmdb-watcher-${{ github.ref_name }}-windows-x64.zip"
+
+      - name: Package portable (Linux)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          cp src-tauri/target/${{ matrix.target }}/release/scmdb-watcher \
+            "scmdb-watcher-${{ github.ref_name }}-linux-x64"
+          tar -czf "scmdb-watcher-${{ github.ref_name }}-linux-x64.tar.gz" \
+            -C src-tauri/target/${{ matrix.target }}/release scmdb-watcher
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: |
+            scmdb-watcher-${{ github.ref_name }}-windows-x64.exe
+            scmdb-watcher-${{ github.ref_name }}-windows-x64.zip
+            scmdb-watcher-${{ github.ref_name }}-linux-x64
+            scmdb-watcher-${{ github.ref_name }}-linux-x64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'SCMDB Watcher ${{ github.ref_name }}'
-          releaseBody: |
-            See the [README](https://github.com/${{ github.repository }}/blob/main/README.md) for details.
-
-            ## Changes
-            - See commit history for this release.
-          releaseDraft: true
-          prerelease: false
-          args: --target ${{ matrix.target }}
