@@ -20,6 +20,11 @@ pub struct AppState {
 }
 
 #[tauri::command]
+pub fn is_dev_build() -> bool {
+    cfg!(debug_assertions)
+}
+
+#[tauri::command]
 pub async fn get_config(state: State<'_, AppState>) -> Result<AppConfig, String> {
     let config = state.config.lock().await;
     Ok(config.clone())

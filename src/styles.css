@@ -425,6 +425,51 @@ body {
   flex: 1;
 }
 
+.origins-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.origin-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.origin-item .origin-text {
+  flex: 1;
+  word-break: break-all;
+}
+
+.origin-item .origin-text.default {
+  color: var(--text-secondary);
+}
+
+.origin-item .btn-icon {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+
+.origin-item .btn-icon:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.origin-item .btn-icon.btn-danger:hover {
+  color: #e74c3c;
+}
+
 .toggle-label {
   display: inline-flex !important;
   align-items: center;

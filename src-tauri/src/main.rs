@@ -41,6 +41,7 @@ fn main() {
         .plugin(tauri_plugin_shell::init())
         .manage(app_state)
         .invoke_handler(tauri::generate_handler![
+            commands::is_dev_build,
             commands::get_config,
             commands::save_config,
             commands::start_watcher,

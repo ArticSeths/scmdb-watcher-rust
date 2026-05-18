@@ -147,6 +147,14 @@
             </label>
           </div>
           <div class="form-group">
+            <label>Allowed CORS Origins</label>
+            <div class="origins-list" id="originsList"></div>
+            <div class="input-row">
+              <input type="text" id="inputNewOrigin" class="input" placeholder="https://example.com">
+              <button class="btn btn-ghost" id="btnAddOrigin">Add</button>
+            </div>
+          </div>
+          <div class="form-group">
             <label class="toggle-label">
               <input type="checkbox" id="chkDevMode">
               Developer mode (allow localhost CORS origins)

@@ -8,6 +8,8 @@ pub struct AppConfig {
     pub dev_mode: bool,
     pub dev_origins: Vec<String>,
     pub auto_start_watcher: bool,
+    #[serde(default)]
+    pub custom_origins: Vec<String>,
 }
 
 impl Default for AppConfig {
@@ -18,6 +20,7 @@ impl Default for AppConfig {
             dev_mode: false,
             dev_origins: vec![],
             auto_start_watcher: true,
+            custom_origins: vec![],
         }
     }
 }
@@ -58,7 +61,12 @@ impl AppConfig {
             "https://scmdb.net".to_string(),
             "https://www.scmdb.net".to_string(),
         ];
-        if self.dev_mode {
+        for o in &self.custom_origins {
+            if !origins.contains(o) {
+                origins.push(o.clone());
+            }
+        }
+        if cfg!(debug_assertions) && self.dev_mode {
             origins.push("http://localhost:5173".to_string());
             origins.push("http://localhost:3000".to_string());
             for o in &self.dev_origins {

@@ -34,6 +34,9 @@ const chkAutoStart = $('#chkAutoStart');
 const chkDevMode = $('#chkDevMode');
 const devOriginsGroup = $('#devOriginsGroup');
 const inputDevOrigins = $('#inputDevOrigins');
+const originsList = $('#originsList');
+const inputNewOrigin = $('#inputNewOrigin');
+const btnAddOrigin = $('#btnAddOrigin');
 const btnSaveSettings = $('#btnSaveSettings');
 const saveFeedback = $('#saveFeedback');
 
@@ -218,15 +221,77 @@ btnClearLogs.addEventListener('click', () => {
 });
 
 // --- Settings ---
+const DEFAULT_ORIGINS = ['https://scmdb.net', 'https://www.scmdb.net'];
+let customOrigins = [];
+
+function renderOrigins() {
+  originsList.innerHTML = '';
+  DEFAULT_ORIGINS.forEach((origin) => {
+    const item = document.createElement('div');
+    item.className = 'origin-item';
+    item.innerHTML = `<span class="origin-text default">${origin} (default)</span>`;
+    originsList.appendChild(item);
+  });
+  customOrigins.forEach((origin, idx) => {
+    const item = document.createElement('div');
+    item.className = 'origin-item';
+    item.innerHTML = `
+      <span class="origin-text">${origin}</span>
+      <button class="btn-icon" data-action="edit" data-idx="${idx}" title="Edit">✎</button>
+      <button class="btn-icon btn-danger" data-action="delete" data-idx="${idx}" title="Delete">✕</button>
+    `;
+    originsList.appendChild(item);
+  });
+}
+
+originsList.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const idx = parseInt(btn.dataset.idx);
+  if (btn.dataset.action === 'delete') {
+    customOrigins.splice(idx, 1);
+    renderOrigins();
+  } else if (btn.dataset.action === 'edit') {
+    const newVal = prompt('Edit origin:', customOrigins[idx]);
+    if (newVal !== null && newVal.trim()) {
+      customOrigins[idx] = newVal.trim();
+      renderOrigins();
+    }
+  }
+});
+
+btnAddOrigin.addEventListener('click', () => {
+  const val = inputNewOrigin.value.trim();
+  if (val && !customOrigins.includes(val) && !DEFAULT_ORIGINS.includes(val)) {
+    customOrigins.push(val);
+    inputNewOrigin.value = '';
+    renderOrigins();
+  }
+});
+
+inputNewOrigin.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') btnAddOrigin.click();
+});
+
 async function loadConfig() {
   try {
     const config = await invoke('get_config');
     inputLogPath.value = config.log_path;
     inputPort.value = config.port;
     chkAutoStart.checked = config.auto_start_watcher;
-    chkDevMode.checked = config.dev_mode;
-    inputDevOrigins.value = (config.dev_origins || []).join(', ');
-    devOriginsGroup.classList.toggle('hidden', !config.dev_mode);
+    customOrigins = config.custom_origins || [];
+    renderOrigins();
+    const isDev = await invoke('is_dev_build');
+    const devSection = chkDevMode.closest('.form-group');
+    if (!isDev) {
+      devSection.classList.add('hidden');
+      devOriginsGroup.classList.add('hidden');
+    } else {
+      devSection.classList.remove('hidden');
+      chkDevMode.checked = config.dev_mode;
+      inputDevOrigins.value = (config.dev_origins || []).join(', ');
+      devOriginsGroup.classList.toggle('hidden', !config.dev_mode);
+    }
     statPort.textContent = config.port;
   } catch (e) {
     console.error('Load config error:', e);
@@ -248,6 +313,7 @@ btnSaveSettings.addEventListener('click', async () => {
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean),
+      custom_origins: [...customOrigins],
     };
     await invoke('save_config', { config });
     statPort.textContent = config.port;
